@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,11 +12,12 @@ import {
   VALORES_INICIALES,
   type Parametros,
 } from "@/lib/cotizador"
-import { Printer, RotateCcw, DoorClosed, Save } from "lucide-react"
+import { Printer, RotateCcw, DoorClosed, Save, FileText } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 
 export default function Page() {
+  const router = useRouter()
   const [valores, setValores] = useState<Parametros>(VALORES_INICIALES)
   const [cliente, setCliente] = useState("")
   const [mostrarClienteView, setMostrarClienteView] = useState(false)
@@ -96,18 +98,28 @@ export default function Page() {
   return (
     <main className="min-h-svh bg-background">
       <header className="no-print border-b border-border bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-5 sm:px-6">
-          <span className="flex size-10 items-center justify-center rounded-lg bg-primary-foreground/10">
-            <DoorClosed className="size-5" />
-          </span>
-          <div>
-            <h1 className="text-xl font-bold leading-tight tracking-tight">
-              WALUM · Cotizador
-            </h1>
-            <p className="text-sm text-primary-foreground/70">
-              Puertas de aluminio · Línea Herrero
-            </p>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-lg bg-primary-foreground/10">
+              <DoorClosed className="size-5" />
+            </span>
+            <div>
+              <h1 className="text-xl font-bold leading-tight tracking-tight">
+                WALUM · Cotizador
+              </h1>
+              <p className="text-sm text-primary-foreground/70">
+                Puertas de aluminio · Línea Herrero
+              </p>
+            </div>
           </div>
+          <Button
+            variant="secondary"
+            onClick={() => router.push("/cotizaciones")}
+            className="gap-2"
+          >
+            <FileText className="size-4" />
+            Presupuestos
+          </Button>
         </div>
       </header>
 
