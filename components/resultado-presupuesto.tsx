@@ -83,42 +83,45 @@ export function ResultadoPresupuesto({
 
       <Separator />
 
-      {!esCliente && (
-        <div className="py-2">
-          <p className="pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Materiales
-          </p>
+      <div className="py-2">
+        <p className="pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Materiales
+        </p>
+        <Fila
+          label="Marco"
+          detalle={`Perímetro ${r.perimetro.toFixed(2)} m`}
+          valor={moneda(r.costoMarco)}
+          mostrarValor={!esCliente}
+        />
+        <Fila
+          label="Batiente"
+          detalle={`${(p.alto * 2).toFixed(2)} m`}
+          valor={moneda(r.costoBatiente)}
+          mostrarValor={!esCliente}
+        />
+        <Fila
+          label="Travesaños"
+          detalle={`${p.cantTravesanos} u · ${(p.cantTravesanos * p.ancho).toFixed(2)} m`}
+          valor={moneda(r.costoTravesano)}
+          mostrarValor={!esCliente}
+        />
+        <Fila
+          label="Tablillas"
+          detalle={`${r.cantidadTablillas} u · ${r.metrosTablilla.toFixed(2)} m`}
+          valor={moneda(r.costoTablilla)}
+          mostrarValor={!esCliente}
+        />
+        {p.revAncho > 0 && p.revAlto > 0 ? (
           <Fila
-            label="Marco"
-            detalle={`Perímetro ${r.perimetro.toFixed(2)} m`}
-            valor={moneda(r.costoMarco)}
+            label="Revestimiento"
+            detalle={`${p.revAncho} × ${p.revAlto} m · ${r.m2Revestimiento.toFixed(2)} m²`}
+            valor={moneda(r.costoRevestimiento)}
+            mostrarValor={!esCliente}
           />
-          <Fila
-            label="Batiente"
-            detalle={`${(p.alto * 2).toFixed(2)} m`}
-            valor={moneda(r.costoBatiente)}
-          />
-          <Fila
-            label="Travesaños"
-            detalle={`${p.cantTravesanos} u · ${(p.cantTravesanos * p.ancho).toFixed(2)} m`}
-            valor={moneda(r.costoTravesano)}
-          />
-          <Fila
-            label="Tablillas"
-            detalle={`${r.cantidadTablillas} u · ${r.metrosTablilla.toFixed(2)} m`}
-            valor={moneda(r.costoTablilla)}
-          />
-          {p.revAncho > 0 && p.revAlto > 0 ? (
-            <Fila
-              label="Revestimiento"
-              detalle={`${p.revAncho} × ${p.revAlto} m · ${r.m2Revestimiento.toFixed(2)} m²`}
-              valor={moneda(r.costoRevestimiento)}
-            />
-          ) : (
-            <Fila label="Revestimiento" detalle="Sin revestimiento" valor={moneda(0)} />
-          )}
-        </div>
-      )}
+        ) : (
+          <Fila label="Revestimiento" detalle="Sin revestimiento" valor={moneda(0)} mostrarValor={!esCliente} />
+        )}
+      </div>
 
       {!esCliente && <Separator />}
 

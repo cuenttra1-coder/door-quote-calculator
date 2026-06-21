@@ -11,13 +11,15 @@ import {
   VALORES_INICIALES,
   type Parametros,
 } from "@/lib/cotizador"
-import { Printer, RotateCcw, DoorClosed } from "lucide-react"
+import { Printer, RotateCcw, DoorClosed, Save } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
+import { toast } from "sonner"
 
 export default function Page() {
   const [valores, setValores] = useState<Parametros>(VALORES_INICIALES)
   const [cliente, setCliente] = useState("")
   const [mostrarClienteView, setMostrarClienteView] = useState(false)
+  const [guardando, setGuardando] = useState(false)
 
   const resultado = useMemo(() => {
     const seguro = Object.fromEntries(
@@ -43,6 +45,52 @@ export default function Page() {
   function reset() {
     setValores(VALORES_INICIALES)
     setCliente("")
+  }
+
+  async function guardarCotizacion() {
+    if (!cliente.trim()) {
+      toast.error("Por favor ingresa el nombre del cliente")
+      return
+    }
+
+    setGuardando(true)
+    try {
+      const response = await fetch("/api/cotizaciones/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombreCliente: cliente.trim(),
+          presupuestoAdministrativo: {
+            ...resultado,
+            cliente,
+            fecha,
+          },
+          presupuestoCliente: {
+            total: resultado.total,
+            cliente,
+            fecha,
+          },
+          parametros: valores,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al guardar")
+      }
+
+      const data = await response.json()
+      toast.success(`Cotización guardada para ${cliente}`)
+      
+      // Opcional: redirigir a página de cotizaciones
+      // router.push(`/cotizaciones/${data.id}`)
+    } catch (error) {
+      console.error("Error:", error)
+      toast.error("Error al guardar la cotización")
+    } finally {
+      setGuardando(false)
+    }
   }
 
   return (
@@ -81,6 +129,15 @@ export default function Page() {
             <Button onClick={() => window.print()} className="gap-2">
               <Printer className="size-4" />
               Imprimir / Exportar PDF
+            </Button>
+            <Button 
+              onClick={guardarCotizacion} 
+              variant="default"
+              className="gap-2"
+              disabled={guardando}
+            >
+              <Save className="size-4" />
+              {guardando ? "Guardando..." : "Guardar Cotización"}
             </Button>
             <Button variant="outline" onClick={reset} className="gap-2">
               <RotateCcw className="size-4" />
