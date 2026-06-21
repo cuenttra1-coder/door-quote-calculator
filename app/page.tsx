@@ -12,10 +12,12 @@ import {
   type Parametros,
 } from "@/lib/cotizador"
 import { Printer, RotateCcw, DoorClosed } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
 
 export default function Page() {
   const [valores, setValores] = useState<Parametros>(VALORES_INICIALES)
   const [cliente, setCliente] = useState("")
+  const [mostrarClienteView, setMostrarClienteView] = useState(false)
 
   const resultado = useMemo(() => {
     const seguro = Object.fromEntries(
@@ -88,13 +90,51 @@ export default function Page() {
         </section>
 
         <aside className="lg:sticky lg:top-6 lg:self-start flex flex-col gap-6">
-          <ResultadoPresupuesto
-            resultado={resultado}
-            parametros={valores}
-            cliente={cliente}
-            fecha={fecha}
-            esCliente={false}
-          />
+          <div className="no-print flex items-center justify-between rounded-lg border border-border bg-card p-4">
+            <div className="flex flex-col gap-1">
+              <Label className="text-sm font-medium">
+                {mostrarClienteView ? "Presupuesto Para Cliente" : "Presupuesto Administrativo"}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {mostrarClienteView ? "Solo precio final visible" : "Todos los detalles"}
+              </p>
+            </div>
+            <Switch
+              checked={mostrarClienteView}
+              onCheckedChange={setMostrarClienteView}
+            />
+          </div>
+
+          {!mostrarClienteView && (
+            <ResultadoPresupuesto
+              resultado={resultado}
+              parametros={valores}
+              cliente={cliente}
+              fecha={fecha}
+              esCliente={false}
+            />
+          )}
+
+          {mostrarClienteView && (
+            <ResultadoPresupuesto
+              resultado={resultado}
+              parametros={valores}
+              cliente={cliente}
+              fecha={fecha}
+              esCliente={true}
+            />
+          )}
+
+          <div className="hidden print:block print:page-break-before">
+            <ResultadoPresupuesto
+              resultado={resultado}
+              parametros={valores}
+              cliente={cliente}
+              fecha={fecha}
+              esCliente={false}
+            />
+          </div>
+
           <div className="hidden print:block">
             <ResultadoPresupuesto
               resultado={resultado}
