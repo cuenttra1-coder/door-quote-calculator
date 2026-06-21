@@ -123,32 +123,41 @@ export function ResultadoPresupuesto({
         )}
       </div>
 
-      {!esCliente && <Separator />}
+      <Separator />
 
-      {!esCliente && (
-        <div className="py-2">
-          <p className="pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Accesorios
-          </p>
-          <Fila
-            label="Bisagras"
-            detalle={`${p.bisagras} u`}
-            valor={moneda(r.costoBisagras)}
-          />
-          <Fila label="Cerradura" valor={moneda(r.costoCerradura)} />
-          <Fila label="Picaporte" valor={moneda(r.costoPicaporte)} />
-          <Fila
-            label="Burlete"
-            detalle={`${r.metrosBurlete.toFixed(2)} m (alto × 2)`}
-            valor={moneda(r.costoBurlete)}
-          />
-          <Fila
-            label="Otros insumos"
-            detalle={`${p.porcentajeOtros}% del material`}
-            valor={moneda(r.costoOtros)}
-          />
-        </div>
-      )}
+      <div className="py-2">
+        <p className="pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Accesorios
+        </p>
+        <Fila
+          label="Bisagras"
+          detalle={`${p.bisagras} u`}
+          valor={moneda(r.costoBisagras)}
+          mostrarValor={!esCliente}
+        />
+        <Fila 
+          label="Cerradura" 
+          valor={moneda(r.costoCerradura)}
+          mostrarValor={!esCliente}
+        />
+        <Fila 
+          label="Picaporte" 
+          valor={moneda(r.costoPicaporte)}
+          mostrarValor={!esCliente}
+        />
+        <Fila
+          label="Burlete"
+          detalle={`${r.metrosBurlete.toFixed(2)} m (alto × 2)`}
+          valor={moneda(r.costoBurlete)}
+          mostrarValor={!esCliente}
+        />
+        <Fila
+          label="Otros insumos"
+          detalle={`${p.porcentajeOtros}% del material`}
+          valor={moneda(r.costoOtros)}
+          mostrarValor={!esCliente}
+        />
+      </div>
 
       {!esCliente && <Separator />}
 
