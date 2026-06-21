@@ -87,13 +87,23 @@ export default function Page() {
           </div>
         </section>
 
-        <aside className="lg:sticky lg:top-6 lg:self-start">
+        <aside className="lg:sticky lg:top-6 lg:self-start flex flex-col gap-6">
           <ResultadoPresupuesto
             resultado={resultado}
             parametros={valores}
             cliente={cliente}
             fecha={fecha}
+            esCliente={false}
           />
+          <div className="hidden print:block">
+            <ResultadoPresupuesto
+              resultado={resultado}
+              parametros={valores}
+              cliente={cliente}
+              fecha={fecha}
+              esCliente={true}
+            />
+          </div>
         </aside>
       </div>
     </main>

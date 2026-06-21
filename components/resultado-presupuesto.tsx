@@ -8,16 +8,19 @@ type Props = {
   parametros: Parametros
   cliente: string
   fecha: string
+  esCliente?: boolean
 }
 
 function Fila({
   label,
   valor,
   detalle,
+  mostrarValor = true,
 }: {
   label: string
   valor: string
   detalle?: string
+  mostrarValor?: boolean
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-2">
@@ -27,9 +30,11 @@ function Fila({
           <span className="text-xs text-muted-foreground">{detalle}</span>
         ) : null}
       </div>
-      <span className="font-mono text-sm font-medium tabular-nums text-foreground">
-        {valor}
-      </span>
+      {mostrarValor && (
+        <span className="font-mono text-sm font-medium tabular-nums text-foreground">
+          {valor}
+        </span>
+      )}
     </div>
   )
 }
@@ -39,10 +44,11 @@ export function ResultadoPresupuesto({
   parametros: p,
   cliente,
   fecha,
+  esCliente = false,
 }: Props) {
   return (
     <div
-      id="presupuesto-print"
+      id={esCliente ? "presupuesto-cliente-print" : "presupuesto-print"}
       className="flex flex-col rounded-xl border border-border bg-card p-6"
     >
       <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
@@ -53,7 +59,9 @@ export function ResultadoPresupuesto({
           </p>
         </div>
         <div className="text-right text-xs text-muted-foreground">
-          <p className="font-medium text-foreground">Presupuesto</p>
+          <p className="font-medium text-foreground">
+            {esCliente ? "Presupuesto" : "Presupuesto Administrativo"}
+          </p>
           <p>{fecha}</p>
         </div>
       </div>
@@ -75,71 +83,81 @@ export function ResultadoPresupuesto({
 
       <Separator />
 
-      <div className="py-2">
-        <p className="pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Materiales
-        </p>
-        <Fila
-          label="Marco"
-          detalle={`Perímetro ${r.perimetro.toFixed(2)} m`}
-          valor={moneda(r.costoMarco)}
-        />
-        <Fila
-          label="Batiente"
-          detalle={`${(p.alto * 2).toFixed(2)} m`}
-          valor={moneda(r.costoBatiente)}
-        />
-        <Fila
-          label="Travesaños"
-          detalle={`${p.cantTravesanos} u · ${(p.cantTravesanos * p.ancho).toFixed(2)} m`}
-          valor={moneda(r.costoTravesano)}
-        />
-        <Fila
-          label="Tablillas"
-          detalle={`${r.cantidadTablillas} u · ${r.metrosTablilla.toFixed(2)} m`}
-          valor={moneda(r.costoTablilla)}
-        />
-        <Fila
-          label="Revestimiento"
-          detalle={`${p.revAncho} × ${p.revAlto} m · ${r.m2Revestimiento.toFixed(2)} m²`}
-          valor={moneda(r.costoRevestimiento)}
-        />
-      </div>
+      {!esCliente && (
+        <div className="py-2">
+          <p className="pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Materiales
+          </p>
+          <Fila
+            label="Marco"
+            detalle={`Perímetro ${r.perimetro.toFixed(2)} m`}
+            valor={moneda(r.costoMarco)}
+          />
+          <Fila
+            label="Batiente"
+            detalle={`${(p.alto * 2).toFixed(2)} m`}
+            valor={moneda(r.costoBatiente)}
+          />
+          <Fila
+            label="Travesaños"
+            detalle={`${p.cantTravesanos} u · ${(p.cantTravesanos * p.ancho).toFixed(2)} m`}
+            valor={moneda(r.costoTravesano)}
+          />
+          <Fila
+            label="Tablillas"
+            detalle={`${r.cantidadTablillas} u · ${r.metrosTablilla.toFixed(2)} m`}
+            valor={moneda(r.costoTablilla)}
+          />
+          {p.revAncho > 0 && p.revAlto > 0 ? (
+            <Fila
+              label="Revestimiento"
+              detalle={`${p.revAncho} × ${p.revAlto} m · ${r.m2Revestimiento.toFixed(2)} m²`}
+              valor={moneda(r.costoRevestimiento)}
+            />
+          ) : (
+            <Fila label="Revestimiento" detalle="Sin revestimiento" valor={moneda(0)} />
+          )}
+        </div>
+      )}
 
-      <Separator />
+      {!esCliente && <Separator />}
 
-      <div className="py-2">
-        <p className="pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Accesorios
-        </p>
-        <Fila
-          label="Bisagras"
-          detalle={`${p.bisagras} u`}
-          valor={moneda(r.costoBisagras)}
-        />
-        <Fila label="Cerradura" valor={moneda(r.costoCerradura)} />
-        <Fila label="Picaporte" valor={moneda(r.costoPicaporte)} />
-        <Fila
-          label="Burlete"
-          detalle={`${r.metrosBurlete.toFixed(2)} m (alto × 2)`}
-          valor={moneda(r.costoBurlete)}
-        />
-        <Fila
-          label="Otros insumos"
-          detalle={`${p.porcentajeOtros}% del material`}
-          valor={moneda(r.costoOtros)}
-        />
-      </div>
+      {!esCliente && (
+        <div className="py-2">
+          <p className="pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Accesorios
+          </p>
+          <Fila
+            label="Bisagras"
+            detalle={`${p.bisagras} u`}
+            valor={moneda(r.costoBisagras)}
+          />
+          <Fila label="Cerradura" valor={moneda(r.costoCerradura)} />
+          <Fila label="Picaporte" valor={moneda(r.costoPicaporte)} />
+          <Fila
+            label="Burlete"
+            detalle={`${r.metrosBurlete.toFixed(2)} m (alto × 2)`}
+            valor={moneda(r.costoBurlete)}
+          />
+          <Fila
+            label="Otros insumos"
+            detalle={`${p.porcentajeOtros}% del material`}
+            valor={moneda(r.costoOtros)}
+          />
+        </div>
+      )}
 
-      <Separator />
+      {!esCliente && <Separator />}
 
-      <div className="py-2">
-        <Fila label="Costo de fabricación" valor={moneda(r.costoMateriales)} />
-        <Fila
-          label={`Ganancia (${p.ganancia}%)`}
-          valor={moneda(r.ganancia)}
-        />
-      </div>
+      {!esCliente && (
+        <div className="py-2">
+          <Fila label="Costo de fabricación" valor={moneda(r.costoMateriales)} />
+          <Fila
+            label={`Ganancia (${p.ganancia}%)`}
+            valor={moneda(r.ganancia)}
+          />
+        </div>
+      )}
 
       <div className="mt-2 flex items-center justify-between rounded-lg bg-primary px-5 py-4 text-primary-foreground">
         <span className="text-sm font-medium uppercase tracking-wide">Total</span>

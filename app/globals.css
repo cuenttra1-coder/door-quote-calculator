@@ -180,7 +180,21 @@
   #presupuesto-print * {
     visibility: visible;
   }
+  #presupuesto-cliente-print,
+  #presupuesto-cliente-print * {
+    visibility: visible;
+  }
   #presupuesto-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    border: none;
+  }
+  #presupuesto-cliente-print {
     position: absolute;
     left: 0;
     top: 0;
