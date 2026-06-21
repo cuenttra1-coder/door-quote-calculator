@@ -37,10 +37,32 @@ export default function CotizacionDetallePage({ params }: PageProps) {
   useEffect(() => {
     async function cargarCotizacion() {
       try {
+        // Primero intenta con localStorage (ya que es lo más directo)
+        const cotizacionesLocal = localStorage.getItem("cotizaciones")
+        if (cotizacionesLocal) {
+          try {
+            const cotizacionesGuardadas = JSON.parse(cotizacionesLocal)
+            const cotizacionEncontrada = cotizacionesGuardadas.find((c: any) => c.id === params.id)
+            if (cotizacionEncontrada) {
+              setCotizacion(cotizacionEncontrada)
+              setCargando(false)
+              return
+            }
+          } catch (e) {
+            console.warn("Error parsing localStorage:", e)
+          }
+        }
+        
+        // Si no está en localStorage, intenta con el servidor
         const response = await fetch(`/api/cotizaciones/${params.id}`)
-        if (!response.ok) throw new Error("Cotización no encontrada")
-        const data = await response.json()
-        setCotizacion(data)
+        if (response.ok) {
+          const data = await response.json()
+          setCotizacion(data)
+          setCargando(false)
+          return
+        }
+        
+        throw new Error("Cotización no encontrada")
       } catch (err) {
         setError("Error al cargar la cotización")
         console.error(err)
@@ -188,13 +210,15 @@ export default function CotizacionDetallePage({ params }: PageProps) {
                   Total
                 </span>
                 <span className="font-mono text-2xl font-bold tabular-nums">
-                  ${cotizacion.presupuestoAdministrativo.total?.toLocaleString(
-                    "es-AR",
-                    {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }
-                  ) || "0,00"}
+                  ${(
+                    cotizacion.presupuestoAdministrativo?.total ||
+                    cotizacion.presupuestoCliente?.total ||
+                    (cotizacion as any)?.total ||
+                    0
+                  ).toLocaleString("es-AR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
               </div>
 
@@ -205,7 +229,7 @@ export default function CotizacionDetallePage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Para impresión */}
+          {/* Para impresi��n */}
           <div className="hidden print:block">
             <div id="presupuesto-cliente-print" className="flex flex-col gap-4 rounded-lg border border-border p-6">
               <div className="flex items-start justify-between gap-4">

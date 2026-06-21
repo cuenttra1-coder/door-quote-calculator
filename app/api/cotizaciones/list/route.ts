@@ -27,8 +27,8 @@ export async function GET() {
 
       return NextResponse.json(agrupadas)
     } catch (dbError) {
-      // If database fails, return empty list
-      console.warn("Database connection unavailable, returning empty list:", dbError)
+      // Database not available, client should use localStorage
+      console.warn("Database unavailable, returning empty list:", dbError)
       return NextResponse.json({})
     }
   } catch (error) {

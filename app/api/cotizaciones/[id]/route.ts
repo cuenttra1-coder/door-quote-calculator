@@ -27,8 +27,8 @@ export async function GET(
 
       return NextResponse.json(resultado[0])
     } catch (dbError) {
-      // If database fails, return not found
-      console.warn("Database connection unavailable:", dbError)
+      // Database not available, client should use localStorage
+      console.warn("Database unavailable:", dbError)
       return NextResponse.json(
         { error: "Cotización no encontrada" },
         { status: 404 }

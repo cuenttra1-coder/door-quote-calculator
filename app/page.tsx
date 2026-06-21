@@ -14,7 +14,6 @@ import {
 } from "@/lib/cotizador"
 import { Printer, RotateCcw, DoorClosed, Save, FileText } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
-import { toast } from "sonner"
 
 export default function Page() {
   const router = useRouter()
@@ -22,6 +21,7 @@ export default function Page() {
   const [cliente, setCliente] = useState("")
   const [mostrarClienteView, setMostrarClienteView] = useState(false)
   const [guardando, setGuardando] = useState(false)
+  const [mensaje, setMensaje] = useState("")
 
   const resultado = useMemo(() => {
     const seguro = Object.fromEntries(
@@ -51,45 +51,56 @@ export default function Page() {
 
   async function guardarCotizacion() {
     if (!cliente.trim()) {
-      toast.error("Por favor ingresa el nombre del cliente")
+      setMensaje("Por favor ingresa el nombre del cliente")
+      setTimeout(() => setMensaje(""), 3000)
       return
     }
 
     setGuardando(true)
+    setMensaje("")
     try {
-      const response = await fetch("/api/cotizaciones/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const nuevaCotizacion = {
+        id: Math.random().toString(36).substr(2, 9),
+        nombreCliente: cliente.trim(),
+        fechaCreacion: new Date().toISOString(),
+        presupuestoAdministrativo: {
+          ...resultado,
+          cliente,
+          fecha,
         },
-        body: JSON.stringify({
-          nombreCliente: cliente.trim(),
-          presupuestoAdministrativo: {
-            ...resultado,
-            cliente,
-            fecha,
-          },
-          presupuestoCliente: {
-            total: resultado.total,
-            cliente,
-            fecha,
-          },
-          parametros: valores,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Error al guardar")
+        presupuestoCliente: {
+          total: resultado.total,
+          cliente,
+          fecha,
+        },
+        parametros: valores,
       }
 
-      const data = await response.json()
-      toast.success(`Cotización guardada para ${cliente}`)
-      
-      // Opcional: redirigir a página de cotizaciones
-      // router.push(`/cotizaciones/${data.id}`)
+      // Guardar en localStorage primero (como backup)
+      const cotizacionesLocal = localStorage.getItem("cotizaciones") || "[]"
+      const cotizacionesGuardadas = JSON.parse(cotizacionesLocal)
+      cotizacionesGuardadas.push(nuevaCotizacion)
+      localStorage.setItem("cotizaciones", JSON.stringify(cotizacionesGuardadas))
+
+      // Intentar guardar en servidor también
+      try {
+        await fetch("/api/cotizaciones/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(nuevaCotizacion),
+        })
+      } catch (serverError) {
+        console.warn("Error al guardar en servidor, pero se guardó en localStorage", serverError)
+      }
+
+      setMensaje(`Cotización guardada para ${cliente}`)
+      setTimeout(() => setMensaje(""), 3000)
     } catch (error) {
       console.error("Error:", error)
-      toast.error("Error al guardar la cotización")
+      setMensaje("Error al guardar la cotización")
+      setTimeout(() => setMensaje(""), 3000)
     } finally {
       setGuardando(false)
     }
@@ -124,6 +135,15 @@ export default function Page() {
       </header>
 
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[1fr_420px]">
+        {mensaje && (
+          <div className={`col-span-full rounded-lg border p-4 ${
+            mensaje.includes("Error") 
+              ? "border-red-200 bg-red-50 text-red-800" 
+              : "border-green-200 bg-green-50 text-green-800"
+          }`}>
+            {mensaje}
+          </div>
+        )}
         <section className="no-print flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="cliente">Cliente / Referencia</Label>

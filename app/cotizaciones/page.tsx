@@ -25,6 +25,33 @@ export default function CotizacionesPage() {
         const response = await fetch("/api/cotizaciones/list")
         if (!response.ok) throw new Error("Error al cargar cotizaciones")
         const data = await response.json()
+        
+        // Si el servidor devuelve datos vacíos, intenta con localStorage
+        if (Object.keys(data).length === 0) {
+          const cotizacionesLocal = localStorage.getItem("cotizaciones")
+          if (cotizacionesLocal) {
+            try {
+              const cotizacionesGuardadas = JSON.parse(cotizacionesLocal)
+              const agrupadas = cotizacionesGuardadas.reduce(
+                (acc: Record<string, Cotizacion[]>, cotizacion: Cotizacion) => {
+                  const cliente = cotizacion.nombreCliente
+                  if (!acc[cliente]) {
+                    acc[cliente] = []
+                  }
+                  acc[cliente].push(cotizacion)
+                  return acc
+                },
+                {}
+              )
+              setCotizaciones(agrupadas)
+              setCargando(false)
+              return
+            } catch (e) {
+              console.warn("Error parsing localStorage:", e)
+            }
+          }
+        }
+        
         setCotizaciones(data)
       } catch (err) {
         setError("Error al cargar las cotizaciones")
