@@ -1,5 +1,5 @@
+import { put, list, get } from "@vercel/blob"
 import { NextResponse } from "next/server"
-import { randomUUID } from "crypto"
 
 export async function POST(request: Request) {
   try {
@@ -13,24 +13,45 @@ export async function POST(request: Request) {
       )
     }
 
+    const cotizacionId = data.id || Math.random().toString(36).substr(2, 9)
     const nuevaCotizacion = {
       ...data,
-      id: data.id || randomUUID(),
+      id: cotizacionId,
       fechaCreacion: data.fechaCreacion || new Date().toISOString(),
     }
 
-    // Try to use database if available
+    // Get existing cotizaciones list from Blob
+    let cotizacionesExistentes = []
     try {
-      const { db } = await import("@/lib/db")
-      const { cotizaciones } = await import("@/lib/db/schema")
-      
-      const result = await db.insert(cotizaciones).values(nuevaCotizacion).returning()
-      return NextResponse.json(result[0], { status: 201 })
-    } catch (dbError) {
-      // Database not available, client is handling with localStorage
-      console.warn("Database unavailable, client will use localStorage:", dbError)
-      return NextResponse.json(nuevaCotizacion, { status: 201 })
+      const indexResult = await get("cotizaciones/index.json", {
+        access: "private",
+      })
+      if (indexResult) {
+        const text = await indexResult.stream?.text?.() || ""
+        if (text) {
+          cotizacionesExistentes = JSON.parse(text)
+        }
+      }
+    } catch (e) {
+      console.log("No existing cotizaciones index found, creating new one")
     }
+
+    // Add new cotización
+    cotizacionesExistentes.push(nuevaCotizacion)
+
+    // Save updated index to Blob
+    await put("cotizaciones/index.json", JSON.stringify(cotizacionesExistentes), {
+      access: "private",
+      contentType: "application/json",
+    })
+
+    // Also save individual cotización file
+    await put(`cotizaciones/${cotizacionId}.json`, JSON.stringify(nuevaCotizacion), {
+      access: "private",
+      contentType: "application/json",
+    })
+
+    return NextResponse.json(nuevaCotizacion, { status: 201 })
   } catch (error) {
     console.error("Error saving cotización:", error)
     return NextResponse.json(

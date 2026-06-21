@@ -1,3 +1,4 @@
+import { get } from "@vercel/blob"
 import { NextResponse } from "next/server"
 
 export async function GET(
@@ -8,27 +9,23 @@ export async function GET(
     const { id } = params
 
     try {
-      const { db } = await import("@/lib/db")
-      const { cotizaciones } = await import("@/lib/db/schema")
-      const { eq } = await import("drizzle-orm")
+      const result = await get(`cotizaciones/${id}.json`, {
+        access: "private",
+      })
 
-      const resultado = await db
-        .select()
-        .from(cotizaciones)
-        .where(eq(cotizaciones.id, id))
-        .limit(1)
-
-      if (!resultado.length) {
+      if (!result) {
         return NextResponse.json(
           { error: "Cotización no encontrada" },
           { status: 404 }
         )
       }
 
-      return NextResponse.json(resultado[0])
-    } catch (dbError) {
-      // Database not available, client should use localStorage
-      console.warn("Database unavailable:", dbError)
+      const text = await result.stream?.text?.() || ""
+      const cotizacion = JSON.parse(text)
+
+      return NextResponse.json(cotizacion)
+    } catch (e) {
+      console.warn("Error retrieving cotización from Blob:", e)
       return NextResponse.json(
         { error: "Cotización no encontrada" },
         { status: 404 }
