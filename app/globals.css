@@ -176,11 +176,11 @@
   body * {
     visibility: hidden;
   }
-  #presupuesto-print,
-  #presupuesto-print * {
+  #presupuesto-cliente-print,
+  #presupuesto-cliente-print * {
     visibility: visible;
   }
-  #presupuesto-print {
+  #presupuesto-cliente-print {
     position: absolute;
     left: 0;
     top: 0;
